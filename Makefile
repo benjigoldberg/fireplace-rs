@@ -2,9 +2,11 @@ CARGO_HOME=$(HOME)/.cargo
 CARGO_BIN_DIR=$(CARGO_HOME)/bin
 CARGO_WATCH_DIR=$(CARGO_BIN_DIR)/cargo-watch
 CARGO_SYSTEMFD_DIR=$(CARGO_BIN_DIR)/systemfd
+CARGO_CLIPPY_DIR=$(CARGO_BIN_DIR)/cargo-clippy
+CARGO_FORMAT_DIR =$(CARGO_BIN_DIR)/rustfmt
 
 .PHONY: all
-all: build
+all: test lint build
 
 .PHONY: clean
 clean: ## Cleans up build artifacts
@@ -26,7 +28,24 @@ $(CARGO_SYSTEMFD_DIR):
 
 .PHONY: watch
 watch: $(CARGO_WATCH_DIR) $(CARGO_SYSTEMFD_DIR) ## Runs the server in development mode with hot reloading
-	systemfd --no-pid -s http::3000 -- cargo watch -x run
+	systemfd --no-pid -s http::8000 -- cargo watch -x 'run -- server'
+
+test: ## Runs all tests
+	cargo test
+
+$(CARGO_CLIPPY_DIR):
+	cargo install cargo-clippy
+
+.PHONY: lint
+lint: $(CARGO_CLIPPY_DIR) ## Lints the code with Cargo Clippy
+	cargo clippy --all-targets --all-features -- -D warnings
+
+$(CARGO_FORMAT_DIR):
+	cargo install rustfmt
+
+.PHONY: fmt
+fmt: $(CARGO_FORMAT_DIR) ## Formats code
+	cargo fmt
 
 .PHONY: help
 help: ## Prints this help command
