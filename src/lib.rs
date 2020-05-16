@@ -1,6 +1,6 @@
 extern crate sysfs_gpio;
 
-mod views;
 mod controllers;
-pub use controllers::fireplace;
+mod views;
+pub use controllers::Fireplace;
 pub mod server;
