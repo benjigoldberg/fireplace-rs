@@ -2,7 +2,7 @@ use crate::server;
 use actix_web::error;
 use actix_web::{web, HttpResponse, Responder};
 use serde_derive::Deserialize;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 #[derive(Deserialize)]
 pub struct FireplaceFormData {
@@ -11,7 +11,7 @@ pub struct FireplaceFormData {
 
 pub async fn state_handler(
     form: web::Form<FireplaceFormData>,
-    data: web::Data<Mutex<server::Data>>,
+    data: web::Data<Arc<Mutex<server::Data>>>,
 ) -> impl Responder {
     let (fan, flame) = match form.status.as_str() {
         "allOn" => (true, true),

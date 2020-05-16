@@ -1,7 +1,7 @@
 use actix_files as fs;
 use actix_web::{web, App, HttpServer};
 use listenfd::ListenFd;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use crate::{views, Fireplace};
 
@@ -11,12 +11,12 @@ pub struct Data {
 
 pub async fn run(address: &str, fp_state: Fireplace) -> std::io::Result<()> {
     let mut listenfd = ListenFd::from_env();
-    let state = web::Data::new(Data {
-        fireplace: Mutex::new(fp_state),
-    });
+    let data = Arc::new(Mutex::new(Data {
+        fireplace: fp_state,
+    }));
     let mut server = HttpServer::new(move || {
         App::new()
-            .app_data(state.clone())
+            .app_data(data.clone())
             .route("/fireplace", web::post().to(views::state_handler))
             .service(fs::Files::new("/", "./static/").index_file("index.html"))
     });
