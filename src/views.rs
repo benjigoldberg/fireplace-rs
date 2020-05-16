@@ -24,9 +24,8 @@ pub async fn state_handler(
             )))
         }
     };
-    let fireplace_state = data.lock().unwrap();
-    let mut fireplace_controller = fireplace_state.fireplace.lock().unwrap();
-    match fireplace_controller.set(fan, flame) {
+    let mut fireplace_state = data.lock().unwrap();
+    match fireplace_state.fireplace.set(fan, flame) {
         Ok(_) => Ok(HttpResponse::Ok()),
         Err(e) => Err(error::ErrorBadRequest(format!(
             "Unable to set fireplace state: {}",
