@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use crate::{views, Fireplace};
 
 pub struct Data {
-    pub fireplace: Mutex<Fireplace>,
+    pub fireplace: Fireplace,
 }
 
 pub async fn run(address: &str, fp_state: Fireplace) -> std::io::Result<()> {
