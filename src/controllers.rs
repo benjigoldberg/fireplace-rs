@@ -1,58 +1,43 @@
+use log::{debug};
+use gpio_cdev::{Chip, LineRequestFlags};
+use gpio_cdev::errors::Error;
+
 /// GPIO_FAN_PIN is the pin on the raspberry pi that controls the fan
-const GPIO_FAN_PIN: u64 = 23;
+const GPIO_FAN_PIN: u32 = 23;
 /// GPIO_FLAME_PIN is the pin on the raspberry pi that controls the flame
-const GPIO_FLAME_PIN: u64 = 24;
+const GPIO_FLAME_PIN: u32 = 24;
 
 /// Fireplace describes the current fireplace condition
 #[derive(Clone, Debug)]
 pub struct Fireplace {
-    fan_pin: sysfs_gpio::Pin,
-    flame_pin: sysfs_gpio::Pin,
-    fan_dir: sysfs_gpio::Direction,   // If true, the fan is on
-    flame_dir: sysfs_gpio::Direction, // If true, the flame is on
+    fan_val: u8,   // If 0 the fan is off, if 1 the fan is on
+    flame_val: u8, // If 0 the fan is off, if 1 the flame is on
 }
 
 impl Fireplace {
     // Returns the current fireplace state
-    pub fn new() -> Result<Fireplace, sysfs_gpio::Error> {
-        let mut state = Fireplace {
-            fan_pin: sysfs_gpio::Pin::new(GPIO_FAN_PIN),
-            flame_pin: sysfs_gpio::Pin::new(GPIO_FLAME_PIN),
-            fan_dir: sysfs_gpio::Direction::Low,
-            flame_dir: sysfs_gpio::Direction::Low,
+    pub fn new() -> Result<Fireplace, Error> {
+        let state = Fireplace {
+            fan_val: 0,
+            flame_val: 0,
         };
-        state.fan_dir = Self::_get_direction(state.fan_pin)?;
-        state.flame_dir = Self::_get_direction(state.fan_pin)?;
         Ok(state)
     }
 
     // Given a state, set the fireplace to match the struct's state
-    pub fn set(&mut self, (fan, flame): (bool, bool)) -> Result<(), sysfs_gpio::Error> {
-        self.fan_pin
-            .with_exported(|| Self::_set(self.fan_pin, fan))?;
-        self.flame_pin
-            .with_exported(|| Self::_set(self.flame_pin, flame))?;
-        self.fan_dir = Self::_get_direction(self.fan_pin)?;
-        self.flame_dir = Self::_get_direction(self.flame_pin)?;
+    pub fn set(&mut self, (fan, flame): (bool, bool)) -> Result<(), Error> {
+        debug!("getting gpio chip /dev/gpiochip0");
+        let mut chip = Chip::new("/dev/gpiochip0")?;
+
+        debug!("getting fan line");
+        let fan_line = chip.get_line(GPIO_FAN_PIN)?;
+        debug!("getting and setting fan handle to {}", fan);
+        fan_line.request(LineRequestFlags::OUTPUT, fan as u8, "fireplace-rs")?;
+
+        debug!("getting flame line");
+        let flame_line = chip.get_line(GPIO_FLAME_PIN)?;
+        debug!("getting and setting flame handle to {}", flame);
+        flame_line.request(LineRequestFlags::OUTPUT, flame as u8, "fireplace-rs")?;
         Ok(())
-    }
-
-    // Given a pin and a desired state, sets that pins direction
-    fn _set(pin: sysfs_gpio::Pin, enabled: bool) -> Result<(), sysfs_gpio::Error> {
-        if enabled {
-            pin.set_direction(sysfs_gpio::Direction::High)
-        } else {
-            pin.set_direction(sysfs_gpio::Direction::Low)
-        }
-    }
-
-    // Given a pin, gets the direction
-    fn _get_direction(pin: sysfs_gpio::Pin) -> Result<sysfs_gpio::Direction, sysfs_gpio::Error> {
-        let mut direction = sysfs_gpio::Direction::Low;
-        pin.with_exported(|| {
-            direction = pin.get_direction()?;
-            Ok(())
-        })?;
-        Ok(direction)
     }
 }
