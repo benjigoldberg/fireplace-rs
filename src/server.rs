@@ -1,6 +1,7 @@
 use actix_files as fs;
 use actix_web::{web, App, HttpServer};
 use listenfd::ListenFd;
+use log::{info};
 use std::sync::{Arc, Mutex};
 
 use crate::{views, Fireplace};
@@ -27,6 +28,6 @@ pub async fn run(address: &str, fp_state: Fireplace) -> std::io::Result<()> {
         server.bind(address)?
     };
 
-    println!("server available at {}", address);
+    info!("server available at {}", address);
     server.run().await
 }

@@ -1,11 +1,9 @@
-extern crate sysfs_gpio;
-
-// GPIO_FAN_PIN is the pin on the raspberry pi that controls the fan
+/// GPIO_FAN_PIN is the pin on the raspberry pi that controls the fan
 const GPIO_FAN_PIN: u64 = 23;
-// GPIO_FLAME_PIN is the pin on the raspberry pi that controls the flame
+/// GPIO_FLAME_PIN is the pin on the raspberry pi that controls the flame
 const GPIO_FLAME_PIN: u64 = 24;
 
-// Fireplace describes the current fireplace condition
+/// Fireplace describes the current fireplace condition
 #[derive(Clone, Debug)]
 pub struct Fireplace {
     fan_pin: sysfs_gpio::Pin,
@@ -23,19 +21,19 @@ impl Fireplace {
             fan_dir: sysfs_gpio::Direction::Low,
             flame_dir: sysfs_gpio::Direction::Low,
         };
-        state.fan_dir = Fireplace::_get_direction(state.fan_pin)?;
-        state.flame_dir = Fireplace::_get_direction(state.fan_pin)?;
+        state.fan_dir = Self::_get_direction(state.fan_pin)?;
+        state.flame_dir = Self::_get_direction(state.fan_pin)?;
         Ok(state)
     }
 
     // Given a state, set the fireplace to match the struct's state
-    pub fn set(&mut self, fan: bool, flame: bool) -> Result<(), sysfs_gpio::Error> {
+    pub fn set(&mut self, (fan, flame): (bool, bool)) -> Result<(), sysfs_gpio::Error> {
         self.fan_pin
-            .with_exported(|| Fireplace::_set(self.fan_pin, fan))?;
+            .with_exported(|| Self::_set(self.fan_pin, fan))?;
         self.flame_pin
-            .with_exported(|| Fireplace::_set(self.flame_pin, flame))?;
-        self.fan_dir = Fireplace::_get_direction(self.fan_pin)?;
-        self.flame_dir = Fireplace::_get_direction(self.flame_pin)?;
+            .with_exported(|| Self::_set(self.flame_pin, flame))?;
+        self.fan_dir = Self::_get_direction(self.fan_pin)?;
+        self.flame_dir = Self::_get_direction(self.flame_pin)?;
         Ok(())
     }
 

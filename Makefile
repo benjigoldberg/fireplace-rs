@@ -16,6 +16,14 @@ clean: ## Cleans up build artifacts
 build: ## Builds the binary
 	cargo build
 
+.PHONY: cross
+cross-raspi: ## Cross-compiles the binary targeting the raspberry-pi
+	cross build --release --target armv7-unknown-linux-gnueabihf
+
+.PHONY: install-raspi
+install-raspi: cross-raspi ## Installs the binary on the raspberry pi from a remote machine
+	scp target/armv7-unknown-linux-gnueabihf/release/fireplace-rs bgoldberg@192.168.2.100:
+
 .PHONY: release
 release: ## Builds the binary in release mode
 	cargo build --release

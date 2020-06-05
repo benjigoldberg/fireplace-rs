@@ -1,4 +1,4 @@
-extern crate clap;
+#[macro_use] extern crate log;
 
 use fireplace_rs::server;
 use fireplace_rs::Fireplace;
@@ -36,12 +36,12 @@ async fn main() -> std::io::Result<()> {
     let fan = matches.is_present("fan");
     let mut fp_state = Fireplace::new().expect("unable to communicate with raspberry pi");
     fp_state
-        .set(fan, flame)
+        .set((fan, flame))
         .expect("unable to set initial fireplace state");
 
     match matches.subcommand() {
         ("server", Some(server_matches)) => {
-            println!(
+            info!(
                 "run server with initial state flame: {}, fan: {}",
                 flame, fan
             );
@@ -54,7 +54,7 @@ async fn main() -> std::io::Result<()> {
             .await?;
         }
         _ => {
-            println!("fireplace state set to flame: {}, fan: {}", flame, fan);
+            info!("fireplace state set to flame: {}, fan: {}", flame, fan);
         }
     }
     Ok(())
