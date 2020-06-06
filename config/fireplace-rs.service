@@ -1,0 +1,15 @@
+[Unit]
+Description=Rust Fireplace Server
+After=rsyslog.target
+
+[Service]
+WorkingDirectory=/home/bgoldberg/workspace/fireplace-rs
+ExecStart=/home/bgoldberg/workspace/fireplace-rs/fireplace-rs server 0.0.0.0:80
+Restart=always
+KillSignal=SIGQUIT
+Type=simple
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
