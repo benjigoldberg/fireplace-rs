@@ -3,8 +3,8 @@ Description=Rust Fireplace Server
 After=rsyslog.target
 
 [Service]
-WorkingDirectory=/home/bgoldberg/workspace/fireplace-rs
-ExecStart=/home/bgoldberg/workspace/fireplace-rs/fireplace-rs server 0.0.0.0:80
+WorkingDirectory=/home/bgoldberg
+ExecStart=/home/bgoldberg/fireplace-rs server 0.0.0.0:80
 Restart=always
 KillSignal=SIGQUIT
 Type=simple

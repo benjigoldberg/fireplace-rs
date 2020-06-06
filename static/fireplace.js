@@ -1,5 +1,5 @@
 function makeRequest(state) {
-  $.post("/fireplace", {fireplaceState: state})
+  $.post("/fireplace", {status: state})
     .done(function() {
       console.log("successfully set fireplace status");
     })
